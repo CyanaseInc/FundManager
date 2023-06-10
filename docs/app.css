@@ -283,7 +283,7 @@ body {
     font-size: 12px;
     line-height: 15px;
     letter-spacing: -0.02em;
-    color: #90A3BF;
+    color: black;
 }
 
 .percentage-increase {
@@ -377,7 +377,42 @@ tr > td:first-child {
     color: black !important;
     border: 2px solid #252859 !important; 
 }
+/* upadet modal*/
 
+
+
+
+.field_input {
+    position: relative;
+    display: flex;
+    width: auto;
+    margin: 0 10px;
+  }
+  .field_input .field_input-container {
+    position: relative;
+    display: flex;
+    width: 100%;
+    margin: 10px;
+  }
+  .field_input .field_input-container .field_input-field {
+    padding: 15px;
+    background-color: #fff;
+    border: none;
+    border-radius: 10px;
+    width: 100%;
+    color: black;
+    outline: none;
+    z-index: 0;
+    -webkit-tap-highlight-color: transparent;
+    line-height: 1;
+  }
+  .field_input .field_input-container .field_input-field::-webkit-field_input-placeholder {
+    color: black;
+    line-height: 1;
+    padding-top: 2px;
+  }
+
+  
 /* -------------- PIE CHART -------------- */
 .pie-chart {
     height: 220px;

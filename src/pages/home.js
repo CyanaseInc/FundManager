@@ -1,22 +1,53 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Form, Link } from "react-router-dom";
 import "../../docs/app.css";
 import Topbar from "./top";
-import { Button, Icon } from "atomize";
-import { ArrowDown, ArrowUp } from "./svg";
+import 'react-quill/dist/quill.snow.css';
+import ReactQuill from 'react-quill';
+import { Button, Icon, Modal, Div, Text, Row, Col } from "atomize";
+import {
+  ArrowDown,
+  ArrowUp,
+  BankIcon,
+  Reddot,
+  Yellowdot,
+  Greendot,
+} from "./svg";
+/// Modal chages/update
 
+//// status dots
 function StatusDot({ status }) {
   let dotComponent;
 
   switch (status) {
-    case "Completed":
+    case "1":
       dotComponent = <Greendot />;
       break;
-    case "Pending":
+    case "2":
       dotComponent = <Yellowdot />;
       break;
-    case "On Hold":
+    case "0":
+      dotComponent = <Reddot />;
+      break;
+    default:
+      dotComponent = null;
+  }
+
+  return dotComponent;
+}
+//sataus icon
+function StatusIcon({ status }) {
+  let dotComponent;
+
+  switch (status) {
+    case "UGXBOND":
+      dotComponent = <BankIcon />;
+      break;
+    case "UGXSTOCK":
+      dotComponent = <Yellowdot />;
+      break;
+    case "UGXBILL":
       dotComponent = <Reddot />;
       break;
     default:
@@ -31,15 +62,18 @@ const Home = (isOpen, onClose) => {
   const [myClasses, setClasses] = useState([]);
   const [increasePercentage, setIncreasePercentage] = useState(20);
   const [decreasePercentage, setDecreasePercentage] = useState(10);
-  const[Wallet, setWallet] = useState("0.00");
-  const[deposit, setDeposit] = useState("0.00");
-  const[Withdraw, setWithdraw] = useState("0.00");
- 
+  const [Wallet, setWallet] = useState("0.00");
+  const [deposit, setDeposit] = useState("0.00");
+  const [Withdraw, setWithdraw] = useState("0.00");
+  const [showModal, setShowModal] = useState(false);
+  const [myClassID, setClassID] = useState(false);
+  const [myClassName, setClassName] = useState(false);
+  const [myValue, setValue] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       const loginData = JSON.parse(localStorage.getItem("loginData"));
-      console.log(loginData);
+
       try {
         const response = await axios.post(
           "http://localhost/cyanase/fund_home.php",
@@ -49,10 +83,11 @@ const Home = (isOpen, onClose) => {
         );
 
         const data = response.data;
-         setWallet(response.data.totalWallet);
-         setDeposit(response.data.totalDeposit);
-         setWithdraw(response.data.totalWithdraw);
-        console.log(response.data.investmentPerformace)
+        setWallet(response.data.totalWallet);
+        setDeposit(response.data.totalDeposit);
+        setWithdraw(response.data.totalWithdraw);
+        setTransactionData(response.data.investmentPerformace);
+        console.log(response.data);
         // Check the response from fund_login.php
         if (data.login === "success") {
           // Redirect to dashboard
@@ -79,6 +114,204 @@ const Home = (isOpen, onClose) => {
 
     fetchData();
   }, []);
+  /// INVESTOR UPDATE MODAL
+
+  const Rem4FromTopModal = ({ isOpen, onClose }) => {
+    const [currentValue, setCurrentValue] = useState("");
+    const [newValue, setNewValue] = useState("");
+    const [emailSubject, setEmailSubject] = useState("");
+    const [emailBody, setEmailBody] = useState("");
+    const [attachment, setAttachment] = useState(null);
+
+    const handleInputChange = (e, setter) => {
+      setter(e.target.value);
+    };
+
+    const handleAttachmentChange = (e) => {
+      const file = e.target.files[0];
+      if (file && file.type === "application/pdf") {
+        setAttachment(file);
+      } else {
+        alert("Please select a PDF file for attachment.");
+      }
+    };
+
+    const handleTextFormat = (format) => {
+      const quill = document.querySelector('.email-body .ql-editor');
+      const selection = quill.getSelection();
+      const selectedText = quill.getText(selection.index, selection.length);
+  
+      let modifiedText;
+  
+      switch (format) {
+        case 'bold':
+          modifiedText = `<strong>${selectedText}</strong>`;
+          break;
+        case 'italic':
+          modifiedText = `<em>${selectedText}</em>`;
+          break;
+        case 'paragraph':
+          modifiedText = `<p>${selectedText}</p>`;
+          break;
+        default:
+          modifiedText = selectedText;
+      }
+  
+      quill.insertHTML(selection.index, modifiedText);
+    };
+
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+
+      // Validate inputs before submitting
+      if (
+        !currentValue ||
+        !newValue ||
+        !emailSubject ||
+        !emailBody ||
+        !attachment
+      ) {
+        alert("Please fill in all fields and attach a PDF file.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("currentValue", currentValue);
+      formData.append("newValue", newValue);
+      formData.append("emailSubject", emailSubject);
+      formData.append("emailBody", emailBody);
+      formData.append("attachment", attachment);
+
+      try {
+        // Send data using Axios
+        const response = await axios.post("YOUR_API_ENDPOINT", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        // Handle response as needed
+        console.log(response.data);
+
+        // Close the modal
+        onClose();
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    return (
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        m={{ y: "4rem", x: { xs: "1rem", lg: "auto" } }}
+        rounded="md"
+        bg="#f5f6fa"
+      >
+        <Icon
+          name="Cross"
+          pos="absolute"
+          top="1rem"
+          right="1rem"
+          size="16px"
+          onClick={onClose}
+          cursor="pointer"
+        />
+        <Div d="flex">
+          <h4 p={{ l: "0.5rem", t: "0.25rem" }} textSize="heading">
+            Investment Updater
+          </h4>
+        </Div>
+        <span>
+          Let people that invest with you track their investment performance
+        </span>
+        <Div m={{ t: "1rem" }} d="flex" align="center">
+          <h4>{myClassName}</h4>
+        </Div>
+        <form onSubmit={handleSubmit}>
+          <div className="field_input">
+            <div className="field_input-container">
+              <Row d="flex">
+                <Col>
+                  <input
+                    type="email"
+                    value={currentValue}
+                    onChange={(e) => handleInputChange(e, setCurrentValue)}
+                    className="field_input-field"
+                    placeholder="Current value"
+                  />
+                </Col>
+                <Col>
+                  <input
+                    type="email"
+                    value={newValue}
+                    onChange={(e) => handleInputChange(e, setNewValue)}
+                    className="field_input-field"
+                    placeholder="New value"
+                  />
+                </Col>
+              </Row>
+            </div>
+          </div>
+          <Div>
+            <div className="field_input">
+              <div className="field_input-container">
+                <input
+                  type="email"
+                  value={emailSubject}
+                  onChange={(e) => handleInputChange(e, setEmailSubject)}
+                  className="field_input-field"
+                  placeholder="Email subject"
+                />
+              </div>
+            </div>
+          </Div>
+          <div className="field_input">
+            <div className="field_input-container">
+            
+                <ReactQuill
+            value={emailBody}
+            onChange={setEmailBody}
+            className="email-body field_input-field"
+            placeholder="Enter text"
+          />
+            </div>
+          </div>
+
+          <Div d="flex" align="center">
+        
+           
+
+          </Div>
+          <Div>
+            <label htmlFor="attachmentInput" className="attachment-label">
+              <Icon
+                name="Attachment"
+                pos="relative"
+                top="2px"
+                right="5px"
+                size="20px"
+              />
+              Attach fact sheet in PDF
+            </label>
+            <input
+              type="file"
+              id="attachmentInput"
+              accept="application/pdf"
+              onChange={handleAttachmentChange}
+              style={{ display: "none" }}
+            />
+          </Div>
+
+          <Div d="flex" justify="flex-end">
+            <Button type="submit" bg="info700">
+              Yes, Submit
+            </Button>
+          </Div>
+        </form>
+      </Modal>
+    );
+  };
 
   return (
     <>
@@ -90,16 +323,11 @@ const Home = (isOpen, onClose) => {
               <div className="total-box__left">
                 <div className="header-container">
                   <h3 className="section-header">Totol Investment deposit</h3>
-                  {
-                      increasePercentage > 0
-                        ? <ArrowUp/>
-                        : <ArrowDown/>
-                    }
-                  
-           
+                  {increasePercentage > 0 ? <ArrowUp /> : <ArrowDown />}
                 </div>
                 <h1 className="price">
-                  UGX{deposit}<span className="price-currency">(UGX)</span>
+                  UGX{deposit}
+                  <span className="price-currency">(UGX)</span>
                 </h1>
                 <p>
                   <span
@@ -119,14 +347,11 @@ const Home = (isOpen, onClose) => {
               <div className="total-box__right">
                 <div className="header-container">
                   <h3 className="section-header">Your wallet balance</h3>
-                  {
-                      increasePercentage > 0
-                        ? <ArrowUp/>
-                        : <ArrowDown/>
-                    }
+                  {increasePercentage > 0 ? <ArrowUp /> : <ArrowDown />}
                 </div>
                 <h1 className="price">
-                 {Wallet}<span className="price-currency">(USD)</span>
+                  {Wallet}
+                  <span className="price-currency">(USD)</span>
                 </h1>
                 <p>
                   <span
@@ -263,14 +488,47 @@ const Home = (isOpen, onClose) => {
                   {transactionData.map((transaction, index) => (
                     <tr key={index}>
                       <td>
-                        <BankIcon />
-                        {transaction.type}
+                        <StatusIcon status={transaction.code} />
+                        {transaction.icon}
+                        {transaction.name}
                       </td>
                       <td>{transaction.date}</td>
-                      <td>{transaction.amount}</td>
+                      <td>{transaction.bought}</td>
+                      <td>{transaction.selling}</td>
+                      <td>{transaction.performance_value}</td>
                       <td>
-                        <StatusDot status={transaction.status} />
+                        <StatusDot status={transaction.satus} />
                         {transaction.status}
+                      </td>
+                      <td>
+                        {" "}
+                        <Button
+                          h="2rem"
+                          p={{ x: "0.75rem" }}
+                          textSize="caption"
+                          textColor="info700"
+                          hoverTextColor="info900"
+                          bg="white"
+                          hoverBg="info200"
+                          border="1px solid"
+                          borderColor="info700"
+                          hoverBorderColor="info900"
+                          m={{ r: "0.5rem" }}
+                          onClick={() => {
+                            setShowModal(true);
+                            setClassID(transaction.class_id);
+                            setClassName(transaction.name);
+                            setValue(transaction.selling);
+                          }}
+                        >
+                          Update
+                        </Button>
+                        {showModal && (
+                          <Rem4FromTopModal
+                            isOpen={showModal}
+                            onClose={() => setShowModal(false)}
+                          />
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -307,7 +565,8 @@ const Home = (isOpen, onClose) => {
                 </svg>
               </div>
               <h1 className="price">
-                {Withdraw}<span className="price-currency">(USD)</span>
+                {Withdraw}
+                <span className="price-currency">(USD)</span>
               </h1>
               <p>From Jan 01, 2022 to Jan 31, 2022</p>
               <div className="button-box">
