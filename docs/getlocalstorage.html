@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      content="width=device-width, initial-scale=1.0 ,maximum-scale=1.0, user-scalable=0"
+      name="viewport"
+    />
+    <title>Cyanase-dashboard</title>
+    <meta content="" name="description" />
+    <meta name="theme-color" content="#252859" />
+    <meta
+      content=""
+      name="Sacco, private credit, students investment platform,"
+    />
+
+  </head>
+  <body>
+    </div>
+  
+    <script text="text/javascript" >
+
+        var PERMITTED_DOMAIN ="https://auth.cyanase.com";
+
+        window.addEventListener('message',function(event){
+
+          console.log(event.origin)
+          
+
+if(event.origin===PERMITTED_DOMAIN){
+
+
+
+  if (event.data === null || event.data === undefined) {
+  // variable is either null or undefined
+
+  console.log("hey have you invested with cyanase?")
+}else{
+
+  localStorage.setItem("loginData",  JSON.stringify(event.data));
+    var xcxvxfsye ={"qewwrueu":event.data.id}
+ console.log(event.data.id);
+   
+  localStorage.setItem("loginID",  JSON.stringify(xcxvxfsye));
+  console.log("i go past event.data")
+  console.log(localStorage.getItem("loginID"));
+
+}
+
+
+}else{
+
+console.log("domain not permitted")
+
+}
+
+
+
+        })
+    </script>
+  </body>
+</html>
